@@ -1,1 +1,60 @@
-# z3T-r.github.io
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Type "fun" to Play Video</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    video {
+      display: none;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .hint {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Type <span style="color:#00e0ff;">fun</span> to play the video!</h1>
+  <p class="hint">(Just type it anywhere on the page)</p>
+  <video id="video" controls>
+    <source src="VID_20250930_033158_913.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <script>
+    const video = document.getElementById('video');
+    let typed = '';
+
+    window.addEventListener('keydown', e => {
+      typed += e.key.toLowerCase();
+      if (typed.endsWith('fun')) {
+        video.style.display = 'block';
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }
+      if (typed.length > 10) typed = typed.slice(-10);
+    });
+  </script>
+</body>
+</html>
