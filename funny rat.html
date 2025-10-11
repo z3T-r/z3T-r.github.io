@@ -1,151 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Type "fun" to play a video</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Type "fun" to Play Video</title>
   <style>
-    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-    body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0f172a;color:#e6eef8;padding:24px;box-sizing:border-box;}
-    .card{max-width:760px;width:100%;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:24px;box-shadow:0 8px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03);}
-    label{display:block;margin-bottom:8px;font-weight:600;}
-    input[type="text"]{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit;font-size:16px;outline:none;}
-    .hint{margin-top:10px;color:#9fb0d6;font-size:14px;}
-    .video-wrap{margin-top:18px;display:none;align-items:center;justify-content:center;}
-    video{width:100%;border-radius:8px;max-height:420px;background:black;}
-    .status{margin-top:10px;font-size:14px;color:#bfe0ff;}
-    .btn{margin-top:12px;padding:8px 12px;border-radius:8px;background:#2563eb;color:white;border:none;cursor:pointer;font-weight:600;}
-    .btn.secondary{background:#374151;}
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    video {
+      display: none;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .hint {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
-  <div class="card" role="region" aria-labelledby="title">
-    <h1 id="title">Type the word <em>"fun"</em> to start the video</h1>
-
-    <label for="triggerInput">Type here</label>
-    <input id="triggerInput" type="text" placeholder="type something..." autocomplete="off" aria-describedby="hint" />
-
-    <div class="hint" id="hint">You can also type <strong>f u n</strong> anywhere on the page (in sequence) to trigger it.</div>
-
-    <div class="status" id="status" aria-live="polite">Status: waiting for "fun"…</div>
-
-    <div class="video-wrap" id="videoWrap" aria-hidden="true">
-      <!-- Replace src with your video file or URL (mp4 preferred). -->
-      <video id="VID_20250930_033158_913.mp4" controls preload="auto">
-        <source src="sample-video.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-    </div>
-
-    <button class="btn" id="resetBtn">Reset</button>
-    <button class="btn secondary" id="muteBtn" style="margin-left:8px">Toggle Mute</button>
-  </div>
+  <h1>Type <span style="color:#00e0ff;">fun</span> to play the video!</h1>
+  <p class="hint">(Just type it anywhere on the page)</p>
+  <video id="video" controls>
+    <source src="VID_20250930_033158_913.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 
   <script>
-    (function(){
-      const INPUT = document.getElementById('triggerInput');
-      const STATUS = document.getElementById('status');
-      const VIDEO_WRAP = document.getElementById('videoWrap');
-      const VIDEO = document.getElementById('theVideo');
-      const RESET = document.getElementById('resetBtn');
-      const MUTE = document.getElementById('muteBtn');
+    const video = document.getElementById('video');
+    let typed = '';
 
-      // Normalize and check the input value
-      function checkInputValue(val) {
-        return val.trim().toLowerCase() === 'fun';
+    window.addEventListener('keydown', e => {
+      typed += e.key.toLowerCase();
+      if (typed.endsWith('fun')) {
+        video.style.display = 'block';
+        video.currentTime = 0;
+        video.play().catch(() => {});
       }
-
-      // Show and play the video
-      async function playVideo(triggerSource = 'input') {
-        try {
-          VIDEO_WRAP.style.display = 'block';
-          VIDEO_WRAP.setAttribute('aria-hidden', 'false');
-          VIDEO.currentTime = 0;
-          // Try to play (typing is a user interaction so modern browsers should allow)
-          const p = VIDEO.play();
-          if (p instanceof Promise) {
-            await p; // wait for play to succeed or throw
-          }
-          STATUS.textContent = `Status: playing (triggered by ${triggerSource}).`;
-        } catch (err) {
-          // If autoplay blocked, show helpful message and unmute suggestion
-          STATUS.textContent = 'Status: playback blocked by browser — try clicking play or toggle mute.';
-          console.warn('Playback error:', err);
-        }
-      }
-
-      function resetAll() {
-        INPUT.value = '';
-        VIDEO.pause();
-        VIDEO_WRAP.style.display = 'none';
-        VIDEO_WRAP.setAttribute('aria-hidden', 'true');
-        STATUS.textContent = 'Status: waiting for "fun"…';
-        keyBuffer = '';
-      }
-
-      // Input event (enter or exact match)
-      INPUT.addEventListener('input', () => {
-        if (checkInputValue(INPUT.value)) {
-          playVideo('input box');
-        }
-      });
-
-      INPUT.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          if (checkInputValue(INPUT.value)) {
-            playVideo('input box (Enter)');
-          } else {
-            STATUS.textContent = 'Status: Enter pressed but text is not "fun".';
-          }
-        } else if (e.key === 'Escape') {
-          resetAll();
-        }
-      });
-
-      // Global key sequence detection (e.g., type f u n anywhere)
-      let keyBuffer = '';
-      const MAX_BUFFER = 12;
-      window.addEventListener('keydown', (e) => {
-        // ignore if typing into inputs and you prefer not to trigger via global; you can remove this condition
-        // but we keep it to avoid double-firing when using the input.
-        if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
-          // do still track keys so typing in input can also trigger via sequence
-        }
-        const k = e.key.toLowerCase();
-        // only letters and simple keys
-        if (k.length === 1 && k.match(/[a-z0-9 ]/i)) {
-          keyBuffer += k;
-          if (keyBuffer.length > MAX_BUFFER) keyBuffer = keyBuffer.slice(-MAX_BUFFER);
-        }
-        // check if buffer ends with "fun"
-        if (keyBuffer.endsWith('fun')) {
-          playVideo('global typing');
-          keyBuffer = '';
-        }
-      });
-
-      // Reset button
-      RESET.addEventListener('click', resetAll);
-
-      // Mute toggle
-      MUTE.addEventListener('click', () => {
-        VIDEO.muted = !VIDEO.muted;
-        MUTE.textContent = VIDEO.muted ? 'Unmute' : 'Toggle Mute';
-      });
-
-      // Accessibility: update status when video ends or is paused
-      VIDEO.addEventListener('ended', () => {
-        STATUS.textContent = 'Status: video ended. You can type "fun" again.';
-      });
-      VIDEO.addEventListener('pause', () => {
-        if (!VIDEO.ended) STATUS.textContent = 'Status: paused.';
-      });
-
-      // Helpful: if the video source is not changed, warn developer in console
-      if (!VIDEO.querySelector('source') || !VIDEO.querySelector('source').src) {
-        console.warn('No video source defined. Replace the <source src="sample-video.mp4"> with your file or URL.');
-      }
-    })();
+      if (typed.length > 10) typed = typed.slice(-10);
+    });
   </script>
 </body>
 </html>
