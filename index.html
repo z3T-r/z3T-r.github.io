@@ -45,15 +45,24 @@
   <script>
     const video = document.getElementById('video');
     let typed = '';
-   <input type="text" name="username" placeholder="Enter your name">  
+
     window.addEventListener('keydown', e => {
+      if (e.key.length !== 1) {
+        return;
+      }
+
       typed += e.key.toLowerCase();
+
       if (typed.endsWith('fun')) {
         video.style.display = 'block';
         video.currentTime = 0;
         video.play().catch(() => {});
+        typed = '';
       }
-      if (typed.length > 10) typed = typed.slice(-10);
+
+      if (typed.length > 10) {
+        typed = typed.slice(-10);
+      }
     });
   </script>
 </body>
