@@ -5,9 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Type "fun" to Play Video</title>
   <style>
+    :root {
+      --bg: #000;
+      --text: #fff;
+      --muted: #aaa;
+      --accent: #00e0ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      background: #000;
-      color: #fff;
+      background: var(--bg);
+      color: var(--text);
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
@@ -18,48 +29,92 @@
       text-align: center;
       user-select: none;
       -webkit-user-select: none;
+      padding: 24px;
     }
 
     h1 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      margin: 0 0 10px;
+      line-height: 1.2;
     }
 
-    .tap-hint {
-      color: #aaa;
+    .hint {
+      color: var(--muted);
       font-size: 0.9rem;
-      margin-bottom: 12px;
+      margin: 0 0 18px;
     }
 
     video {
       display: none;
-      width: 80%;
+      width: min(80vw, 600px);
       max-width: 600px;
       border-radius: 8px;
       margin-top: 20px;
       outline: none;
+      background: #111;
     }
 
-    #mobileInput {
-      position: absolute;
-      left: -9999px;
-      top: -9999px;
-      opacity: 0;
-      pointer-events: none;
+    .mode {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .desktop-mode {
+      display: flex;
+    }
+
+    .mobile-mode {
+      display: none;
+    }
+
+    #tapButton {
+      appearance: none;
+      border: 2px solid var(--accent);
+      background: rgba(0, 224, 255, 0.12);
+      color: var(--text);
+      padding: 18px 28px;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 220px;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    #tapButton:active {
+      transform: scale(0.98);
+      background: rgba(0, 224, 255, 0.18);
+    }
+
+    .accent {
+      color: var(--accent);
     }
 
     @media (pointer: coarse) {
-      .tap-hint {
-        display: block;
+      .desktop-mode {
+        display: none;
+      }
+
+      .mobile-mode {
+        display: flex;
       }
     }
   </style>
 </head>
 <body>
-  <h1>Type <span style="color:#00e0ff;">fun</span> !</h1>
-  <p class="tap-hint">Tap the screen and type fun</p>
+  <div class="mode desktop-mode">
+    <h1>Type <span class="accent">fun</span> !</h1>
+    <p class="hint">(Just type it)</p>
+  </div>
 
-  <input id="mobileInput" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="Typing input for fun trigger" />
+  <div class="mode mobile-mode">
+    <h1>Tap <span class="accent">fun</span> !</h1>
+    <button id="tapButton" type="button">Tap to enter fun</button>
+    <p class="hint">Tap the button to complete the sequence.</p>
+  </div>
 
   <video id="video" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture playsinline preload="metadata" oncontextmenu="return false;">
     <source src="VID_20250930_033158_913.mp4" type="video/mp4">
@@ -68,46 +123,63 @@
 
   <script>
     const video = document.getElementById('video');
-    const mobileInput = document.getElementById('mobileInput');
-    let typed = '';
+    const tapButton = document.getElementById('tapButton');
+    const isMobile = window.matchMedia('(pointer: coarse)').matches;
 
-    function triggerFun() {
+    let typed = '';
+    let mobileTapProgress = '';
+
+    function triggerVideo() {
       video.style.display = 'block';
       video.currentTime = 0;
       video.play().catch(() => {});
       typed = '';
-      mobileInput.value = '';
-    }
-
-    function addTypedValue(value) {
-      const letters = Array.from(String(value).toLowerCase())
-        .filter(ch => /[a-z]/.test(ch));
-
-      typed = letters.slice(-10).join('');
-
-      if (typed.endsWith('fun')) {
-        triggerFun();
+      mobileTapProgress = '';
+      if (tapButton) {
+        tapButton.textContent = 'Tap to enter fun';
       }
     }
 
-    document.addEventListener('keydown', e => {
-      if (e.key.length !== 1) return;
-      if (!/[a-z]/i.test(e.key)) return;
-      addTypedValue(typed + e.key);
-    });
+    function handleTypedInput(value) {
+      const clean = String(value)
+        .toLowerCase()
+        .split('')
+        .filter(ch => /[a-z]/.test(ch))
+        .join('');
 
-    mobileInput.addEventListener('input', () => {
-      addTypedValue(mobileInput.value);
-      mobileInput.value = '';
-    });
+      typed = clean.slice(-10);
 
-    document.body.addEventListener('pointerdown', () => {
-      mobileInput.focus();
-    }, { passive: true });
+      if (typed.endsWith('fun')) {
+        triggerVideo();
+      }
+    }
+
+    if (!isMobile) {
+      document.addEventListener('keydown', e => {
+        if (e.key.length !== 1) return;
+        if (!/[a-z]/i.test(e.key)) return;
+        handleTypedInput(typed + e.key);
+      });
+    }
+
+    if (isMobile && tapButton) {
+      tapButton.addEventListener('click', () => {
+        const sequence = ['f', 'u', 'n'];
+        const next = sequence[mobileTapProgress.length];
+
+        if (next) {
+          mobileTapProgress += next;
+          tapButton.textContent = 'Tap to enter ' + mobileTapProgress;
+        }
+
+        if (mobileTapProgress === 'fun') {
+          triggerVideo();
+        }
+      });
+    }
 
     video.addEventListener('contextmenu', e => e.preventDefault());
     video.addEventListener('dragstart', e => e.preventDefault());
-    video.addEventListener('keydown', e => e.preventDefault());
   </script>
 </body>
 </html>
