@@ -13,57 +13,101 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       text-align: center;
+      user-select: none;
+      -webkit-user-select: none;
     }
+
     h1 {
       font-size: 1.5rem;
       margin-bottom: 20px;
     }
+
+    .tap-hint {
+      color: #aaa;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
     video {
       display: none;
       width: 80%;
       max-width: 600px;
       border-radius: 8px;
       margin-top: 20px;
+      outline: none;
     }
-    .hint {
-      color: #aaa;
-      font-size: 0.9rem;
+
+    #mobileInput {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (pointer: coarse) {
+      .tap-hint {
+        display: block;
+      }
     }
   </style>
 </head>
 <body>
   <h1>Type <span style="color:#00e0ff;">fun</span> !</h1>
-  <p class="hint">(Just type it)</p>
-  <video id="video" controls>
+  <p class="tap-hint">Tap the screen and type fun</p>
+
+  <input id="mobileInput" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="Typing input for fun trigger" />
+
+  <video id="video" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture playsinline preload="metadata" oncontextmenu="return false;">
     <source src="VID_20250930_033158_913.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 
   <script>
     const video = document.getElementById('video');
+    const mobileInput = document.getElementById('mobileInput');
     let typed = '';
 
-    window.addEventListener('keydown', e => {
-      if (e.key.length !== 1) {
-        return;
-      }
+    function triggerFun() {
+      video.style.display = 'block';
+      video.currentTime = 0;
+      video.play().catch(() => {});
+      typed = '';
+      mobileInput.value = '';
+    }
 
-      typed += e.key.toLowerCase();
+    function addTypedValue(value) {
+      const letters = Array.from(String(value).toLowerCase())
+        .filter(ch => /[a-z]/.test(ch));
+
+      typed = letters.slice(-10).join('');
 
       if (typed.endsWith('fun')) {
-        video.style.display = 'block';
-        video.currentTime = 0;
-        video.play().catch(() => {});
-        typed = '';
+        triggerFun();
       }
+    }
 
-      if (typed.length > 10) {
-        typed = typed.slice(-10);
-      }
+    document.addEventListener('keydown', e => {
+      if (e.key.length !== 1) return;
+      if (!/[a-z]/i.test(e.key)) return;
+      addTypedValue(typed + e.key);
     });
+
+    mobileInput.addEventListener('input', () => {
+      addTypedValue(mobileInput.value);
+      mobileInput.value = '';
+    });
+
+    document.body.addEventListener('pointerdown', () => {
+      mobileInput.focus();
+    }, { passive: true });
+
+    video.addEventListener('contextmenu', e => e.preventDefault());
+    video.addEventListener('dragstart', e => e.preventDefault());
+    video.addEventListener('keydown', e => e.preventDefault());
   </script>
 </body>
 </html>
