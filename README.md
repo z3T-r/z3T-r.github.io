@@ -1,5 +1,1 @@
-hi
-there is nothing here,
-mabye in later there will be 
-but for now there is NONE!!!
-how about now?
+type fun for fun at https://z3t-r.github.io/
